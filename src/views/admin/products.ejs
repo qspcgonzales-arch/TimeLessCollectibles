@@ -28,8 +28,19 @@
         <p class="muted mb-0"><%= products.length %> total items</p>
       </div>
     </div>
+    <div class="admin-toolbar mb-3" data-admin-products-toolbar>
+      <input class="form-control" type="search" placeholder="Search product or category" data-admin-products-search>
+      <select class="form-select" data-admin-products-sort>
+        <option value="default">Sort: Default</option>
+        <option value="name-asc">Name A-Z</option>
+        <option value="name-desc">Name Z-A</option>
+        <option value="price-asc">Price low-high</option>
+        <option value="price-desc">Price high-low</option>
+      </select>
+      <span class="admin-count-pill"><span data-admin-products-count><%= products.length %></span> visible</span>
+    </div>
     <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
-      <table class="table align-middle admin-products-table">
+      <table class="table align-middle admin-products-table" data-admin-products-table>
         <thead>
           <tr>
             <th>Image</th>
@@ -39,9 +50,9 @@
             <th></th>
           </tr>
         </thead>
-        <tbody>
+        <tbody data-admin-products-body>
           <% products.forEach((product) => { %>
-            <tr>
+            <tr data-admin-product-row data-name="<%= String(product.prodname).toLowerCase() %>" data-category="<%= String(product.categoryName).toLowerCase() %>" data-price="<%= Number(product.price) %>">
               <td>
                 <img src="<%= product.image %>" alt="<%= product.prodname %>" class="admin-thumb" onerror="this.src='https://placehold.co/80x80/141414/f7f1e8?text=TC';">
               </td>
@@ -65,4 +76,5 @@
     </div>
   </section>
 </div>
+<script src="/static/js/admin-tables.js"></script>
 <%- include('../partials/footer') %>

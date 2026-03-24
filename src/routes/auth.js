@@ -49,7 +49,8 @@ router.post('/login', async (req, res, next) => {
       return res.redirect('/admin');
     }
 
-    const [[user]] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
     if (!user || !(await verifyStoredPassword(password, user.password))) {
       setFlash(req, 'error', 'Invalid email or password.');
       return res.redirect('/auth/login');
@@ -57,7 +58,7 @@ router.post('/login', async (req, res, next) => {
 
     if (!user.password.startsWith('$2')) {
       const upgradedHash = await bcrypt.hash(password, 12);
-      await pool.query('UPDATE users SET password = ? WHERE id = ?', [upgradedHash, user.id]);
+      await pool.query('UPDATE users SET password = $1 WHERE id = $2', [upgradedHash, user.id]);
     }
 
     req.session.user = {
@@ -96,7 +97,8 @@ router.post('/signup', async (req, res, next) => {
       return res.redirect('/auth/signup');
     }
 
-    const [[existingUser]] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
+    const result = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    const existingUser = result.rows[0];
     if (existingUser) {
       setFlash(req, 'error', 'That email address is already registered.');
       return res.redirect('/auth/signup');
@@ -104,7 +106,7 @@ router.post('/signup', async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(password, 12);
     await pool.query(
-      'INSERT INTO users (email, password, address, country) VALUES (?, ?, ?, ?)',
+      'INSERT INTO users (email, password, address, country) VALUES ($1, $2, $3, $4)',
       [email, passwordHash, address, country]
     );
 
@@ -137,7 +139,8 @@ router.post('/forgot-password', async (req, res, next) => {
       return res.redirect('/auth/forgot-password');
     }
 
-    const [[user]] = await pool.query('SELECT id, email FROM users WHERE email = ?', [email]);
+    const result = await pool.query('SELECT id, email FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
     if (!user) {
       setFlash(req, 'success', 'If that account exists, a reset link has been prepared.');
       return res.redirect('/auth/forgot-password');
@@ -148,7 +151,7 @@ router.post('/forgot-password', async (req, res, next) => {
     const expiry = new Date(Date.now() + 30 * 60 * 1000);
 
     await pool.query(
-      'UPDATE users SET reset_token_hash = ?, reset_token_expires_at = ? WHERE id = ?',
+      'UPDATE users SET reset_token_hash = $1, reset_token_expires_at = $2 WHERE id = $3',
       [tokenHash, expiry, user.id]
     );
 
@@ -207,10 +210,11 @@ router.post('/reset-password', async (req, res, next) => {
     }
 
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    const [[user]] = await pool.query(
-      'SELECT id, reset_token_expires_at FROM users WHERE reset_token_hash = ?',
+    const result = await pool.query(
+      'SELECT id, reset_token_expires_at FROM users WHERE reset_token_hash = $1',
       [tokenHash]
     );
+    const user = result.rows[0];
 
     if (!user || !user.reset_token_expires_at || new Date(user.reset_token_expires_at).getTime() < Date.now()) {
       setFlash(req, 'error', 'Reset link is invalid or expired.');
@@ -219,7 +223,7 @@ router.post('/reset-password', async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(password, 12);
     await pool.query(
-      'UPDATE users SET password = ?, reset_token_hash = NULL, reset_token_expires_at = NULL WHERE id = ?',
+      'UPDATE users SET password = $1, reset_token_hash = NULL, reset_token_expires_at = NULL WHERE id = $2',
       [passwordHash, user.id]
     );
 

@@ -24,22 +24,25 @@ router.get('/', async (req, res, next) => {
 
     const conditions = [];
     const values = [];
+    let paramCount = 1;
 
     if (category) {
-      conditions.push('prodcategory = ?');
+      conditions.push(`prodcategory = $${paramCount++}`);
       values.push(category);
     }
 
     if (search) {
-      conditions.push('(prodname LIKE ? OR description LIKE ?)');
+      conditions.push(`(prodname LIKE $${paramCount} OR description LIKE $${paramCount + 1})`);
       values.push(search, search);
+      paramCount += 2;
     }
 
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-    const [products] = await pool.query(
+    const result = await pool.query(
       `SELECT * FROM products ${whereClause} ORDER BY prodcategory ASC, prodname ASC`,
       values
     );
+    const products = result.rows;
 
     res.render('products/index', {
       title: 'Products',
@@ -55,7 +58,8 @@ router.get('/', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
   try {
-    const [[product]] = await pool.query('SELECT * FROM products WHERE ID = ?', [req.params.id]);
+    const result = await pool.query('SELECT * FROM products WHERE ID = $1', [req.params.id]);
+    const product = result.rows[0];
 
     if (!product) {
       return res.status(404).render('error', { title: 'Not Found', error: new Error('Product not found') });

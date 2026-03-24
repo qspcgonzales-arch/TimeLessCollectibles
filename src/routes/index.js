@@ -12,12 +12,14 @@ const router = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
-    const [products] = await pool.query(
+    const productsResult = await pool.query(
       'SELECT * FROM products ORDER BY prodcategory ASC, prodname ASC LIMIT 8'
     );
-    const [counts] = await pool.query(
+    const products = productsResult.rows;
+    const countsResult = await pool.query(
       'SELECT prodcategory, COUNT(*) AS count FROM products GROUP BY prodcategory ORDER BY prodcategory ASC'
     );
+    const counts = countsResult.rows;
 
     res.render('home', {
       title: 'Timeless Collectibles',

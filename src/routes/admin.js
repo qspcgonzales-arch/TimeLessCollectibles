@@ -29,12 +29,13 @@ const upload = multer({
 
 router.get('/', requireAdmin, async (req, res, next) => {
   try {
-    const [[stats]] = await pool.query(
+    const result = await pool.query(
       `SELECT
          (SELECT COUNT(*) FROM products) AS productCount,
          (SELECT COUNT(*) FROM users) AS userCount,
          (SELECT COUNT(*) FROM user_orders) AS orderCount`
     );
+    const stats = result.rows[0];
 
     res.render('admin/dashboard', {
       title: 'Admin Dashboard',
@@ -47,7 +48,8 @@ router.get('/', requireAdmin, async (req, res, next) => {
 
 router.get('/products', requireAdmin, async (req, res, next) => {
   try {
-    const [products] = await pool.query('SELECT * FROM products ORDER BY prodname ASC');
+    const result = await pool.query('SELECT * FROM products ORDER BY prodname ASC');
+    const products = result.rows;
     res.render('admin/products', {
       title: 'Manage Products',
       products: products.map(normalizeProduct),
@@ -72,7 +74,7 @@ router.post('/products', requireAdmin, upload.single('image'), async (req, res, 
     }
 
     await pool.query(
-      'INSERT INTO products (ID, prodname, prodcategory, description, image, price) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO products (ID, prodname, prodcategory, description, image, price) VALUES ($1, $2, $3, $4, $5, $6)',
       [
         uuidv4(),
         prodname,
@@ -92,7 +94,7 @@ router.post('/products', requireAdmin, upload.single('image'), async (req, res, 
 
 router.post('/products/:id/delete', requireAdmin, async (req, res, next) => {
   try {
-    await pool.query('DELETE FROM products WHERE ID = ?', [req.params.id]);
+    await pool.query('DELETE FROM products WHERE ID = $1', [req.params.id]);
     setFlash(req, 'success', 'Product deleted.');
     return res.redirect('/admin/products');
   } catch (error) {
@@ -102,13 +104,14 @@ router.post('/products/:id/delete', requireAdmin, async (req, res, next) => {
 
 router.get('/orders', requireAdmin, async (req, res, next) => {
   try {
-    const [orders] = await pool.query(
+    const result = await pool.query(
       `SELECT o.*, u.email, u.address, u.country, p.prodname, p.image, p.price
        FROM user_orders o
        JOIN users u ON u.id = o.UserID
        JOIN products p ON p.ID = o.ProductID
        ORDER BY o.OrderID DESC`
     );
+    const orders = result.rows;
 
     res.render('admin/orders', {
       title: 'Manage Orders',
@@ -134,7 +137,7 @@ router.post('/orders/:id/status', requireAdmin, async (req, res, next) => {
     }
 
     await pool.query(
-      'UPDATE user_orders SET pending = ?, delivering = ?, delivered = ? WHERE OrderID = ?',
+      'UPDATE user_orders SET pending = $1, delivering = $2, delivered = $3 WHERE OrderID = $4',
       [...statusMap[status], req.params.id]
     );
 

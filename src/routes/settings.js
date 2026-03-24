@@ -8,10 +8,11 @@ const router = express.Router();
 
 router.get('/', requireAuth, async (req, res, next) => {
   try {
-    const [[user]] = await pool.query(
-      'SELECT id, email, address, country FROM users WHERE id = ?',
+    const result = await pool.query(
+      'SELECT id, email, address, country FROM users WHERE id = $1',
       [req.session.user.id]
     );
+    const user = result.rows[0];
 
     req.session.user = { ...req.session.user, ...user };
 
@@ -27,7 +28,7 @@ router.get('/', requireAuth, async (req, res, next) => {
 router.post('/address', requireAuth, async (req, res, next) => {
   try {
     const { address, country } = req.body;
-    await pool.query('UPDATE users SET address = ?, country = ? WHERE id = ?', [
+    await pool.query('UPDATE users SET address = $1, country = $2 WHERE id = $3', [
       address,
       country,
       req.session.user.id,
@@ -45,7 +46,8 @@ router.post('/address', requireAuth, async (req, res, next) => {
 router.post('/password', requireAuth, async (req, res, next) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
-    const [[user]] = await pool.query('SELECT password FROM users WHERE id = ?', [req.session.user.id]);
+    const result = await pool.query('SELECT password FROM users WHERE id = $1', [req.session.user.id]);
+    const user = result.rows[0];
 
     const currentMatches = user.password.startsWith('$2')
       ? await bcrypt.compare(currentPassword, user.password)
@@ -62,7 +64,7 @@ router.post('/password', requireAuth, async (req, res, next) => {
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
-    await pool.query('UPDATE users SET password = ? WHERE id = ?', [passwordHash, req.session.user.id]);
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [passwordHash, req.session.user.id]);
 
     setFlash(req, 'success', 'Password updated.');
     return res.redirect('/settings');

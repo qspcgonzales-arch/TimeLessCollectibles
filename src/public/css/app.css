@@ -559,6 +559,24 @@ textarea.form-control::placeholder {
   color: #f7f4ee;
 }
 
+.admin-table-shell,
+.admin-table-shell h1,
+.admin-table-shell .eyebrow,
+.admin-products-table,
+.admin-products-table thead th,
+.admin-products-table tbody td,
+.admin-orders-table,
+.admin-orders-table thead th,
+.admin-orders-table tbody td {
+  color: #fdfdfd;
+}
+
+.admin-products-table tbody td,
+.admin-orders-table tbody td,
+.admin-orders-table tbody td .muted {
+  color: #f7f4ee;
+}
+
 .admin-panel {
   min-height: 100%;
 }

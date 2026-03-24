@@ -295,6 +295,19 @@ textarea.form-control::placeholder {
   border-color: var(--line);
 }
 
+.order-history-shell,
+.order-history-shell h1,
+.order-history-shell .eyebrow,
+.order-history-table,
+.order-history-table thead th,
+.order-history-table tbody td {
+  color: #fdfdfd;
+}
+
+.order-history-table tbody td {
+  color: #f7f4ee;
+}
+
 .admin-panel {
   min-height: 100%;
 }

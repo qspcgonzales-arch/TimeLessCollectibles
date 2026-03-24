@@ -9,8 +9,8 @@
   <section class="catalog-hero mb-4">
     <div class="catalog-hero-copy">
       <p class="eyebrow">Catalog</p>
-      <h1>Collect by mood, era, and obsession.</h1>
-      <p class="lead-copy">Explore the entire archive with live filtering, quick category jumps, and sortable product cards built for browsing instead of scrolling through a static grid.</p>
+      <h1>Browse collectibles by category and style.</h1>
+      <p class="lead-copy">Find plushies, figures, cards, and cartridges with quick search tools, simple sorting, and category browsing in one catalog.</p>
       <div class="catalog-stat-row">
         <article class="catalog-stat-card">
           <span class="catalog-stat-value"><%= products.length %></span>
@@ -29,15 +29,15 @@
     <div class="catalog-spotlight">
       <p class="catalog-spotlight-label">Current focus</p>
       <h2 data-catalog-active-label><%= initialCategoryLabel %></h2>
-      <p class="muted mb-0">Use the controls below to switch between collections instantly, sort by price or name, and tighten the page down to exactly what you want.</p>
+      <p class="muted mb-0">Use the controls below to switch categories, search for a product, and sort the catalog the way you prefer.</p>
     </div>
   </section>
 
   <section class="content-panel catalog-controls-panel mb-4">
     <div class="catalog-toolbar-top">
       <div>
-        <p class="eyebrow">Control Deck</p>
-        <h2>Shape the catalog in real time</h2>
+        <p class="eyebrow">Browse Options</p>
+        <h2>Filter and sort the catalog</h2>
       </div>
       <div class="catalog-results-pill">
         <span data-catalog-count><%= products.length %></span> visible items
@@ -111,7 +111,7 @@
           <div class="catalog-card-footer">
             <div>
               <span class="price">PHP <%= Number(product.price).toLocaleString() %></span>
-              <div class="catalog-card-meta">Ready to view, compare, and collect</div>
+              <div class="catalog-card-meta">Available now at Timeless Collectibles</div>
             </div>
             <div class="catalog-card-actions">
               <a class="catalog-link-button" href="/products/<%= product.ID %>">Open</a>

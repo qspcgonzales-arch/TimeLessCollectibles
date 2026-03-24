@@ -546,6 +546,19 @@ textarea.form-control::placeholder {
   color: #f7f4ee;
 }
 
+.cart-history-shell,
+.cart-history-shell h1,
+.cart-history-shell .eyebrow,
+.cart-history-table,
+.cart-history-table thead th,
+.cart-history-table tbody td {
+  color: #fdfdfd;
+}
+
+.cart-history-table tbody td {
+  color: #f7f4ee;
+}
+
 .admin-panel {
   min-height: 100%;
 }

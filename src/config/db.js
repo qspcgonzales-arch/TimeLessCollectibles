@@ -62,7 +62,6 @@ const testConnection = async () => {
 };
 
 module.exports = pool;
-module.exports.query = (text, params) => pool.query(text, params);
 module.exports.getDbRuntimeConfig = getDbRuntimeConfig;
 module.exports.logDbConfigSummary = logDbConfigSummary;
 module.exports.testConnection = testConnection;

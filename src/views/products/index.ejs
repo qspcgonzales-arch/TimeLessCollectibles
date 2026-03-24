@@ -1,45 +1,131 @@
 <%- include('../partials/header') %>
-<section class="content-panel mb-4">
-  <div class="section-heading">
-    <div>
+<%
+  const categoryEntries = Object.entries(categories);
+  const totalValue = products.reduce((sum, product) => sum + Number(product.price || 0), 0);
+  const averagePrice = products.length ? Math.round(totalValue / products.length) : 0;
+  const initialCategoryLabel = activeCategory && categories[activeCategory] ? categories[activeCategory] : 'All categories';
+%>
+<section class="catalog-shell" data-catalog-root data-initial-category="<%= activeCategory || '' %>" data-initial-search="<%= searchTerm || '' %>">
+  <section class="catalog-hero mb-4">
+    <div class="catalog-hero-copy">
       <p class="eyebrow">Catalog</p>
-      <h1>Browse Products</h1>
-    </div>
-  </div>
-  <form class="field-grid mt-3" method="get" action="/products">
-    <select class="form-select" name="category" onchange="this.form.submit()">
-      <option value="">All categories</option>
-      <% Object.entries(categories).forEach(([value, label]) => { %>
-        <option value="<%= value %>" <%= activeCategory === value ? 'selected' : '' %>><%= label %></option>
-      <% }) %>
-    </select>
-    <div class="d-flex gap-2">
-      <input class="form-control" type="text" name="search" value="<%= searchTerm %>" placeholder="Search products">
-      <button class="btn btn-accent" type="submit">Filter</button>
-    </div>
-  </form>
-</section>
-
-<div class="product-grid">
-  <% products.forEach((product) => { %>
-    <article class="product-card">
-      <div class="product-image-wrap">
-        <img src="<%= product.image %>" alt="<%= product.prodname %>" onerror="this.src='https://placehold.co/600x420/141414/f7f1e8?text=Collectible';">
+      <h1>Collect by mood, era, and obsession.</h1>
+      <p class="lead-copy">Explore the entire archive with live filtering, quick category jumps, and sortable product cards built for browsing instead of scrolling through a static grid.</p>
+      <div class="catalog-stat-row">
+        <article class="catalog-stat-card">
+          <span class="catalog-stat-value"><%= products.length %></span>
+          <span class="catalog-stat-label">Items live now</span>
+        </article>
+        <article class="catalog-stat-card">
+          <span class="catalog-stat-value"><%= categoryEntries.length %></span>
+          <span class="catalog-stat-label">Collections</span>
+        </article>
+        <article class="catalog-stat-card">
+          <span class="catalog-stat-value">PHP <%= averagePrice.toLocaleString() %></span>
+          <span class="catalog-stat-label">Average ticket</span>
+        </article>
       </div>
-      <div class="product-body d-grid gap-2">
-        <p class="product-category"><%= product.categoryName %></p>
-        <h3><a href="/products/<%= product.ID %>"><%= product.prodname %></a></h3>
-        <p class="muted"><%- product.description %></p>
-        <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
-          <span class="price">PHP <%= Number(product.price).toLocaleString() %></span>
-          <% if (currentUser && !currentUser.isAdmin) { %>
-            <form method="post" action="/cart/items/<%= product.ID %>">
-              <button class="btn btn-accent" type="submit">Add to cart</button>
-            </form>
-          <% } %>
+    </div>
+    <div class="catalog-spotlight">
+      <p class="catalog-spotlight-label">Current focus</p>
+      <h2 data-catalog-active-label><%= initialCategoryLabel %></h2>
+      <p class="muted mb-0">Use the controls below to switch between collections instantly, sort by price or name, and tighten the page down to exactly what you want.</p>
+    </div>
+  </section>
+
+  <section class="content-panel catalog-controls-panel mb-4">
+    <div class="catalog-toolbar-top">
+      <div>
+        <p class="eyebrow">Control Deck</p>
+        <h2>Shape the catalog in real time</h2>
+      </div>
+      <div class="catalog-results-pill">
+        <span data-catalog-count><%= products.length %></span> visible items
+      </div>
+    </div>
+
+    <div class="catalog-chip-row" data-catalog-chips>
+      <button class="catalog-chip <%= !activeCategory ? 'is-active' : '' %>" type="button" data-category="">All</button>
+      <% categoryEntries.forEach(([value, label]) => { %>
+        <button class="catalog-chip <%= activeCategory === value ? 'is-active' : '' %>" type="button" data-category="<%= value %>"><%= label %></button>
+      <% }) %>
+    </div>
+
+    <div class="catalog-toolbar-grid">
+      <label class="catalog-search-shell">
+        <span class="catalog-control-label">Search</span>
+        <input class="form-control catalog-search-input" type="search" value="<%= searchTerm %>" placeholder="Search by title, category, or description" data-catalog-search>
+      </label>
+
+      <label>
+        <span class="catalog-control-label">Sort</span>
+        <select class="form-select" data-catalog-sort>
+          <option value="featured">Featured order</option>
+          <option value="name-asc">Name A-Z</option>
+          <option value="name-desc">Name Z-A</option>
+          <option value="price-asc">Price low to high</option>
+          <option value="price-desc">Price high to low</option>
+        </select>
+      </label>
+
+      <div>
+        <span class="catalog-control-label">Layout</span>
+        <div class="catalog-view-toggle">
+          <button class="catalog-view-button is-active" type="button" data-view="grid">Grid</button>
+          <button class="catalog-view-button" type="button" data-view="list">List</button>
         </div>
       </div>
-    </article>
-  <% }) %>
-</div>
+    </div>
+  </section>
+
+  <div class="catalog-empty-state d-none" data-catalog-empty>
+    <h3>No products match this combination.</h3>
+    <p class="muted">Try another category, clear the search term, or switch the sort to bring the catalog back into view.</p>
+    <button class="btn btn-accent" type="button" data-catalog-reset>Reset catalog</button>
+  </div>
+
+  <div class="catalog-grid" data-catalog-grid>
+    <% products.forEach((product, index) => { %>
+      <article
+        class="product-card catalog-card"
+        data-catalog-item
+        data-index="<%= index %>"
+        data-name="<%= product.prodname.toLowerCase() %>"
+        data-category="<%= product.prodcategory %>"
+        data-category-label="<%= product.categoryName.toLowerCase() %>"
+        data-description="<%= String(product.description).replace(/<[^>]+>/g, ' ').toLowerCase() %>"
+        data-price="<%= Number(product.price) %>"
+      >
+        <div class="catalog-card-media">
+          <div class="product-image-wrap">
+            <img src="<%= product.image %>" alt="<%= product.prodname %>" onerror="this.src='https://placehold.co/600x420/141414/f7f1e8?text=Collectible';">
+          </div>
+          <div class="catalog-card-badge"><%= product.categoryName %></div>
+        </div>
+        <div class="product-body catalog-card-body d-grid gap-2">
+          <div class="catalog-card-headline">
+            <p class="product-category">Collection <%= String(index + 1).padStart(2, '0') %></p>
+            <h3><a href="/products/<%= product.ID %>"><%= product.prodname %></a></h3>
+          </div>
+          <p class="catalog-card-description muted"><%- product.description %></p>
+          <div class="catalog-card-footer">
+            <div>
+              <span class="price">PHP <%= Number(product.price).toLocaleString() %></span>
+              <div class="catalog-card-meta">Ready to view, compare, and collect</div>
+            </div>
+            <div class="catalog-card-actions">
+              <a class="catalog-link-button" href="/products/<%= product.ID %>">Open</a>
+              <% if (currentUser && !currentUser.isAdmin) { %>
+                <form method="post" action="/cart/items/<%= product.ID %>">
+                  <button class="btn btn-accent" type="submit">Add to cart</button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</section>
+<script src="/static/js/catalog.js"></script>
 <%- include('../partials/footer') %>

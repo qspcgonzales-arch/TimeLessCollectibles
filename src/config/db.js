@@ -23,6 +23,7 @@ const port = Number(pickEnv('DB_PORT', 'MYSQLPORT') || 3306);
 const user = pickEnv('DB_USER', 'MYSQLUSER') || (isProduction ? undefined : 'root');
 const password = pickEnv('DB_PASSWORD', 'MYSQLPASSWORD') || '';
 const database = pickEnv('DB_NAME', 'MYSQLDATABASE') || (isProduction ? undefined : 'mstvhrxe_tcdb');
+const connectTimeout = Number(process.env.DB_CONNECT_TIMEOUT_MS || 10000);
 
 if (isProduction) {
   const missingVars = [];
@@ -50,6 +51,7 @@ const pool = mysql.createPool({
   user,
   password,
   database,
+  connectTimeout,
   ssl: useSsl
     ? {
         rejectUnauthorized,

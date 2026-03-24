@@ -87,3 +87,36 @@ INSERT INTO products (id, prodname, prodcategory, description, image, price) VAL
 ('f7814dd1-c457-401d-b743-651d4091875c', 'Diablo Lilith', '2', E'- 7 inches tall and 4 inches wide<br />\r\n- Crafted from high-quality PVC for durability and fine detail<br />\r\n- Officially licensed Blizzard Merchandise ✓', 'uploads/DiabloLilith.png', 16000),
 ('fa8bd0f0-6268-47da-a31f-985ea85c761f', 'Jujutsu Kaisen Sukuna Pop Vinyl', '2', E'- 3.75 inches tall and 2.5 inches wide<br />\r\n- Made from vinyl<br />\r\n- Officially licensed by Funko Inc ✓', 'uploads/JujutsuKaisenSukunaPopVinyl.png', 8000)
 ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO users (id, email, password, address, country, reset_token_hash, reset_token_expires_at, "2FA_Pin", "2FA_Expire") VALUES
+(1, 'paularceo21@gmail.com', 'Paul9900!', 'Project 4, Quezon City E.Aguinaldo Street', 'Mexico', NULL, NULL, NULL, NULL),
+(2, 'qpagarceo@tip.edu.ph', '8888Paul!', '938 Aurora Boulevard, Cubao, Quezon City', 'Philippines', NULL, NULL, NULL, NULL),
+(3, '123heyheyhey@yahoo.com', '123456', 'eqweqwe', 'qweqwe', NULL, NULL, NULL, NULL),
+(4, '123drink@gmail.com', '123456', 'Quezon', 'Manila', NULL, NULL, NULL, NULL),
+(5, 'weebeenezer@gmail.com', 'qwerty123', 'Cubao Gateway', 'Philippines', NULL, NULL, NULL, NULL),
+(6, 'qpmmorpilla@tip.edu.ph', 'asdfG1234%', 'Cubao, QC', 'Philippines', NULL, NULL, NULL, NULL),
+(7, 'asalo.it@tip.edu.ph', '9900Paul!', 'Example Address', 'Philippines', NULL, NULL, NULL, NULL),
+(8, 'qaclsubida@tip.edu.ph', 'subida123', 'Quezon City', 'Philippines', NULL, NULL, NULL, NULL)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO cart_items (id, user_id, product_id) VALUES
+(4, 2, '01942256-8446-46c3-8f13-f72dc91d7c1e'),
+(7, 6, '1b55fa41-79a7-4989-8ab6-d6cbf04e5abd'),
+(9, 6, '91218370-9dcf-4499-9847-67b1158f179f'),
+(10, 6, '83e6db54-753b-4f0d-8501-2f35f20633e2')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO user_orders (orderid, userid, productid, quantity, pending, delivering, delivered) VALUES
+(1, 1, '1b55fa41-79a7-4989-8ab6-d6cbf04e5abd', 2, FALSE, FALSE, TRUE),
+(2, 1, '6db0ca81-cc1d-46c7-90dd-632c75015214', 1, TRUE, FALSE, FALSE),
+(3, 2, '01942256-8446-46c3-8f13-f72dc91d7c1e', 2, TRUE, FALSE, FALSE),
+(4, 1, '4d255279-0193-4cfd-aca2-b9dcbb6d8d84', 1, TRUE, FALSE, FALSE),
+(5, 1, '484de00e-8972-443a-acf5-a8a1610278b4', 2, TRUE, FALSE, FALSE),
+(6, 6, '1b55fa41-79a7-4989-8ab6-d6cbf04e5abd', 1, TRUE, FALSE, FALSE),
+(7, 6, '91218370-9dcf-4499-9847-67b1158f179f', 1, FALSE, FALSE, TRUE),
+(8, 6, '83e6db54-753b-4f0d-8501-2f35f20633e2', 1, FALSE, TRUE, FALSE)
+ON CONFLICT (orderid) DO NOTHING;
+
+SELECT setval('users_id_seq', GREATEST((SELECT COALESCE(MAX(id), 1) FROM users), 1), true);
+SELECT setval('cart_items_id_seq', GREATEST((SELECT COALESCE(MAX(id), 1) FROM cart_items), 1), true);
+SELECT setval('user_orders_orderid_seq', GREATEST((SELECT COALESCE(MAX(orderid), 1) FROM user_orders), 1), true);

@@ -1,0 +1,54 @@
+<%- include('../partials/header') %>
+<section class="table-shell admin-panel">
+  <div class="section-heading mb-3">
+    <div>
+      <p class="eyebrow">Admin</p>
+      <h1>Orders</h1>
+      <p class="muted mb-0"><%= orders.length %> total orders</p>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Status</th>
+          <th>Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% orders.forEach((order) => { %>
+          <tr>
+            <td>#<%= order.OrderID %></td>
+            <td>
+              <strong><%= order.email %></strong>
+              <div class="muted"><%= order.address %>, <%= order.country %></div>
+            </td>
+            <td><%= order.prodname %></td>
+            <td><%= order.quantity %></td>
+            <td><span class="badge-status <%= order.statusLabel.toLowerCase() %>"><%= order.statusLabel %></span></td>
+            <td>
+              <form method="post" action="/admin/orders/<%= order.OrderID %>/status" class="d-flex gap-2">
+                <select class="form-select" name="status">
+                  <option value="pending" <%= order.statusLabel === 'Pending' ? 'selected' : '' %>>Pending</option>
+                  <option value="delivering" <%= order.statusLabel === 'Delivering' ? 'selected' : '' %>>Delivering</option>
+                  <option value="delivered" <%= order.statusLabel === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                </select>
+                <button class="btn btn-accent" type="submit">Save</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (!orders.length) { %>
+          <tr>
+            <td colspan="6" class="muted">No orders found yet.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<%- include('../partials/footer') %>

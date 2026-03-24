@@ -1,0 +1,16 @@
+<%- include('../partials/header') %>
+<section class="form-shell narrow-panel">
+  <p class="eyebrow">Second factor</p>
+  <h1>Verify your login</h1>
+  <p class="muted">Enter the 6-digit code sent to <strong><%= email %></strong>.</p>
+  <% if (dev2FAPin) { %>
+    <div class="alert alert-warning mt-3" role="alert">
+      Email is not configured on this local setup. Your 2FA code is: <strong><%= dev2FAPin %></strong>
+    </div>
+  <% } %>
+  <form method="post" action="/auth/verify-2fa" class="mt-4 d-grid gap-3">
+    <input class="form-control" type="text" name="pin" inputmode="numeric" maxlength="6" placeholder="6-digit code" required>
+    <button class="btn btn-accent" type="submit">Verify</button>
+  </form>
+</section>
+<%- include('../partials/footer') %>

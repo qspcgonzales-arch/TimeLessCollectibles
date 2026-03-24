@@ -1,0 +1,45 @@
+<%- include('../partials/header') %>
+<section class="content-panel mb-4">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Catalog</p>
+      <h1>Browse Products</h1>
+    </div>
+  </div>
+  <form class="field-grid mt-3" method="get" action="/products">
+    <select class="form-select" name="category" onchange="this.form.submit()">
+      <option value="">All categories</option>
+      <% Object.entries(categories).forEach(([value, label]) => { %>
+        <option value="<%= value %>" <%= activeCategory === value ? 'selected' : '' %>><%= label %></option>
+      <% }) %>
+    </select>
+    <div class="d-flex gap-2">
+      <input class="form-control" type="text" name="search" value="<%= searchTerm %>" placeholder="Search products">
+      <button class="btn btn-accent" type="submit">Filter</button>
+    </div>
+  </form>
+</section>
+
+<div class="product-grid">
+  <% products.forEach((product) => { %>
+    <article class="product-card">
+      <div class="product-image-wrap">
+        <img src="<%= product.image %>" alt="<%= product.prodname %>" onerror="this.src='https://placehold.co/600x420/141414/f7f1e8?text=Collectible';">
+      </div>
+      <div class="product-body d-grid gap-2">
+        <p class="product-category"><%= product.categoryName %></p>
+        <h3><a href="/products/<%= product.ID %>"><%= product.prodname %></a></h3>
+        <p class="muted"><%- product.description %></p>
+        <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+          <span class="price">PHP <%= Number(product.price).toLocaleString() %></span>
+          <% if (currentUser && !currentUser.isAdmin) { %>
+            <form method="post" action="/cart/items/<%= product.ID %>">
+              <button class="btn btn-accent" type="submit">Add to cart</button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+    </article>
+  <% }) %>
+</div>
+<%- include('../partials/footer') %>

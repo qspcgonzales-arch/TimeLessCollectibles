@@ -1,0 +1,38 @@
+<%- include('../partials/header') %>
+<section class="table-shell">
+  <div class="section-heading mb-3">
+    <div>
+      <p class="eyebrow">Purchases</p>
+      <h1>Order History</h1>
+    </div>
+  </div>
+  <% if (!orders.length) { %>
+    <p class="muted">No orders yet.</p>
+  <% } else { %>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% orders.forEach((order) => { %>
+            <tr>
+              <td>#<%= order.OrderID %></td>
+              <td><%= order.prodname %></td>
+              <td><%= order.quantity %></td>
+              <td>PHP <%= Number(order.price * order.quantity).toLocaleString() %></td>
+              <td><span class="badge-status <%= order.statusLabel.toLowerCase() %>"><%= order.statusLabel %></span></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+<%- include('../partials/footer') %>

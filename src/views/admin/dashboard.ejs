@@ -1,0 +1,31 @@
+<%- include('../partials/header') %>
+<section class="content-panel mb-4">
+  <p class="eyebrow">Admin</p>
+  <h1>Dashboard</h1>
+  <p class="lead-copy">Manage products and customer orders from one place.</p>
+  <div class="admin-actions mt-4">
+    <a class="admin-action-card" href="/admin/products">
+      <span class="admin-action-title">Manage Products</span>
+      <span class="muted">Create new listings and remove outdated stock.</span>
+    </a>
+    <a class="admin-action-card" href="/admin/orders">
+      <span class="admin-action-title">Manage Orders</span>
+      <span class="muted">Update delivery status and review customer orders.</span>
+    </a>
+  </div>
+</section>
+<section class="admin-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+  <article class="metric-card">
+    <p class="muted">Products</p>
+    <h2><%= stats.productCount %></h2>
+  </article>
+  <article class="metric-card">
+    <p class="muted">Users</p>
+    <h2><%= stats.userCount %></h2>
+  </article>
+  <article class="metric-card">
+    <p class="muted">Orders</p>
+    <h2><%= stats.orderCount %></h2>
+  </article>
+</section>
+<%- include('../partials/footer') %>

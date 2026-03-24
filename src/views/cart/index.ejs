@@ -1,0 +1,115 @@
+<%- include('../partials/header') %>
+<section class="table-shell">
+  <div class="section-heading mb-3">
+    <div>
+      <p class="eyebrow">Cart</p>
+      <h1>Your Cart</h1>
+    </div>
+  </div>
+  <% if (!items.length) { %>
+    <p class="muted">Your cart is empty.</p>
+  <% } else { %>
+    <form method="post" action="/orders/checkout" id="checkout-form">
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Checkout</th>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% items.forEach((item, index) => { %>
+              <tr>
+                <td>
+                  <input class="form-check-input" type="checkbox" name="items[<%= index %>][productId]" value="<%= item.ID %>" checked>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center gap-3">
+                    <img src="<%= item.image %>" alt="<%= item.prodname %>" width="72" height="72" style="object-fit: cover; border-radius: 14px;" onerror="this.src='https://placehold.co/72x72/141414/f7f1e8?text=TC';">
+                    <div>
+                      <strong><%= item.prodname %></strong>
+                      <div class="muted"><%- item.description %></div>
+                    </div>
+                  </div>
+                </td>
+                <td><%= item.categoryName %></td>
+                <td>PHP <%= Number(item.price).toLocaleString() %></td>
+                <td>
+                  <input class="form-control" type="number" name="items[<%= index %>][quantity]" min="1" max="99" value="1">
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-danger" type="submit" formaction="/cart/items/<%= item.ID %>/delete">Remove</button>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex flex-wrap gap-3 align-items-center">
+        <button class="btn btn-accent" type="submit">Checkout selected items</button>
+        <% if (paypalClientId) { %>
+          <div id="paypal-button-container" style="min-width: 240px;"></div>
+        <% } %>
+      </div>
+    </form>
+  <% } %>
+</section>
+<% if (items.length && paypalClientId) { %>
+  <script src="https://www.paypal.com/sdk/js?client-id=<%= paypalClientId %>&currency=PHP"></script>
+  <script>
+    const checkoutForm = document.getElementById('checkout-form');
+    const collectSelectedItems = () => {
+      const rows = Array.from(checkoutForm.querySelectorAll('tbody tr'));
+      return rows
+        .map((row) => {
+          const checkbox = row.querySelector('input[type="checkbox"]');
+          const quantity = row.querySelector('input[type="number"]');
+          const priceCell = row.children[3];
+          const price = Number(priceCell.textContent.replace(/[^0-9.]/g, '')) || 0;
+
+          if (!checkbox || !checkbox.checked) {
+            return null;
+          }
+
+          return {
+            productId: checkbox.value,
+            quantity: Number(quantity.value || 1),
+            price,
+          };
+        })
+        .filter(Boolean);
+    };
+
+    paypal.Buttons({
+      createOrder(data, actions) {
+        const items = collectSelectedItems();
+        if (!items.length) {
+          alert('Select at least one item before starting PayPal checkout.');
+          return Promise.reject(new Error('No items selected'));
+        }
+
+        const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              currency_code: 'PHP',
+              value: total.toFixed(2),
+            },
+          }],
+        });
+      },
+      onApprove(data, actions) {
+        return actions.order.capture().then(() => {
+          checkoutForm.submit();
+        });
+      },
+    }).render('#paypal-button-container');
+  </script>
+<% } %>
+<%- include('../partials/footer') %>

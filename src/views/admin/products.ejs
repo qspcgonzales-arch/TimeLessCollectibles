@@ -1,0 +1,68 @@
+<%- include('../partials/header') %>
+<div class="field-grid">
+  <section class="form-shell admin-panel">
+    <p class="eyebrow">Admin</p>
+    <h1>Add product</h1>
+    <p class="muted">Create a new product listing for the storefront catalog.</p>
+    <form method="post" action="/admin/products" enctype="multipart/form-data" class="mt-4 d-grid gap-3">
+      <input class="form-control" type="text" name="prodname" placeholder="Product name" required>
+      <div class="field-grid">
+        <select class="form-select" name="prodcategory" required>
+          <option value="" selected disabled>Select category</option>
+          <option value="1">Plushies</option>
+          <option value="2">Action Figurines</option>
+          <option value="3">Card Collectibles</option>
+          <option value="4">CDs and Cartridges</option>
+        </select>
+        <input class="form-control" type="number" name="price" min="1" placeholder="Price" required>
+      </div>
+      <textarea class="form-control" name="description" placeholder="Description" required></textarea>
+      <input class="form-control" type="file" name="image" accept="image/*" required>
+      <button class="btn btn-accent" type="submit">Create product</button>
+    </form>
+  </section>
+  <section class="table-shell admin-panel">
+    <div class="section-heading mb-3">
+      <div>
+        <h1>Current products</h1>
+        <p class="muted mb-0"><%= products.length %> total items</p>
+      </div>
+    </div>
+    <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% products.forEach((product) => { %>
+            <tr>
+              <td>
+                <img src="<%= product.image %>" alt="<%= product.prodname %>" class="admin-thumb" onerror="this.src='https://placehold.co/80x80/141414/f7f1e8?text=TC';">
+              </td>
+              <td><%= product.prodname %></td>
+              <td><%= product.categoryName %></td>
+              <td>PHP <%= Number(product.price).toLocaleString() %></td>
+              <td>
+                <form method="post" action="/admin/products/<%= product.ID %>/delete">
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+          <% if (!products.length) { %>
+            <tr>
+              <td colspan="5" class="muted">No products found yet.</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+<%- include('../partials/footer') %>

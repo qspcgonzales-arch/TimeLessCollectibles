@@ -1,0 +1,18 @@
+<%- include('../partials/header') %>
+<section class="form-shell narrow-panel">
+  <p class="eyebrow">New collector</p>
+  <h1>Create your account</h1>
+  <form method="post" action="/auth/signup" class="mt-4 d-grid gap-3">
+    <div class="field-grid">
+      <input class="form-control" type="email" name="email" placeholder="Email" required>
+      <input class="form-control" type="text" name="country" placeholder="Country" required>
+    </div>
+    <textarea class="form-control" name="address" placeholder="Address" required></textarea>
+    <div class="field-grid">
+      <input class="form-control" type="password" name="password" placeholder="Password" required>
+      <input class="form-control" type="password" name="confirmPassword" placeholder="Confirm password" required>
+    </div>
+    <button class="btn btn-accent" type="submit">Create account</button>
+  </form>
+</section>
+<%- include('../partials/footer') %>

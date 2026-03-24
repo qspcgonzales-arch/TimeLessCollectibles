@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+<section class="hero-panel mb-5">
+  <div>
+    <p class="eyebrow">Collector-first storefront rewrite</p>
+    <h1>Shop plushies, figurines, cards, and cartridges on a stack you can actually deploy cleanly.</h1>
+    <p class="lead-copy">This Node.js version keeps the original storefront workflow while centralizing auth, cart, orders, and admin management.</p>
+    <div class="d-flex flex-wrap gap-2 mt-4">
+      <a class="btn btn-accent" href="/products">Browse catalog</a>
+      <% if (!currentUser) { %>
+        <a class="btn btn-outline-light" href="/auth/login">Sign in</a>
+      <% } %>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <% categoryCounts.forEach((item) => { %>
+      <article class="stat-card">
+        <span class="stat-count"><%= item.count %></span>
+        <span class="stat-label">Category <%= item.prodcategory %></span>
+      </article>
+    <% }) %>
+  </div>
+</section>
+
+<section>
+  <div class="section-heading">
+    <h2>Featured Items</h2>
+    <a href="/products">See all</a>
+  </div>
+  <div class="product-grid">
+    <% featuredProducts.forEach((product) => { %>
+      <article class="product-card">
+        <div class="product-image-wrap">
+          <img src="<%= product.image %>" alt="<%= product.prodname %>" onerror="this.src='https://placehold.co/600x420/141414/f7f1e8?text=Collectible';">
+        </div>
+        <div class="product-body">
+          <p class="product-category"><%= product.categoryName %></p>
+          <h3><a href="/products/<%= product.ID %>"><%= product.prodname %></a></h3>
+          <p class="price">PHP <%= Number(product.price).toLocaleString() %></p>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</section>
+<%- include('partials/footer') %>

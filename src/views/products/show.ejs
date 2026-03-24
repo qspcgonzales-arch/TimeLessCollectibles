@@ -1,0 +1,18 @@
+<%- include('../partials/header') %>
+<section class="hero-panel">
+  <div class="product-image-wrap">
+    <img src="<%= product.image %>" alt="<%= product.prodname %>" onerror="this.src='https://placehold.co/600x420/141414/f7f1e8?text=Collectible';">
+  </div>
+  <div>
+    <p class="eyebrow"><%= product.categoryName %></p>
+    <h1><%= product.prodname %></h1>
+    <p class="lead-copy"><%- product.description %></p>
+    <p class="price fs-3">PHP <%= Number(product.price).toLocaleString() %></p>
+    <% if (currentUser && !currentUser.isAdmin) { %>
+      <form method="post" action="/cart/items/<%= product.ID %>">
+        <button class="btn btn-accent" type="submit">Add to cart</button>
+      </form>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

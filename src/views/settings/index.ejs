@@ -1,0 +1,24 @@
+<%- include('../partials/header') %>
+<div class="field-grid">
+  <section class="form-shell">
+    <p class="eyebrow">Profile</p>
+    <h1>Address</h1>
+    <form method="post" action="/settings/address" class="mt-4 d-grid gap-3">
+      <input class="form-control" type="email" value="<%= profile.email %>" disabled>
+      <textarea class="form-control" name="address" required><%= profile.address %></textarea>
+      <input class="form-control" type="text" name="country" value="<%= profile.country %>" required>
+      <button class="btn btn-accent" type="submit">Save address</button>
+    </form>
+  </section>
+  <section class="form-shell">
+    <p class="eyebrow">Security</p>
+    <h1>Password</h1>
+    <form method="post" action="/settings/password" class="mt-4 d-grid gap-3">
+      <input class="form-control" type="password" name="currentPassword" placeholder="Current password" required>
+      <input class="form-control" type="password" name="newPassword" placeholder="New password" required>
+      <input class="form-control" type="password" name="confirmPassword" placeholder="Confirm new password" required>
+      <button class="btn btn-accent" type="submit">Update password</button>
+    </form>
+  </section>
+</div>
+<%- include('../partials/footer') %>

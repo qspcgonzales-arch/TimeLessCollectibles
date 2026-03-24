@@ -9,9 +9,9 @@ const router = express.Router();
 router.get('/', requireAuth, async (req, res, next) => {
   try {
     const result = await pool.query(
-      `SELECT c.ID AS cartItemId, c.product_id, p.*
+      `SELECT c.id AS "cartItemId", c.product_id, p.*
        FROM cart_items c
-       JOIN products p ON p.ID = c.product_id
+       JOIN products p ON p.id = c.product_id
        WHERE c.user_id = $1
        ORDER BY p.prodname ASC`,
       [req.session.user.id]
@@ -31,7 +31,7 @@ router.post('/items/:productId', requireAuth, async (req, res, next) => {
   try {
     const productId = req.params.productId;
     const result = await pool.query(
-      'SELECT ID FROM cart_items WHERE user_id = $1 AND product_id = $2',
+      'SELECT id FROM cart_items WHERE user_id = $1 AND product_id = $2',
       [req.session.user.id, productId]
     );
     const existing = result.rows[0];

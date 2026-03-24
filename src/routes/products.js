@@ -58,7 +58,7 @@ router.get('/', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
   try {
-    const result = await pool.query('SELECT * FROM products WHERE ID = $1', [req.params.id]);
+    const result = await pool.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
     const product = result.rows[0];
 
     if (!product) {

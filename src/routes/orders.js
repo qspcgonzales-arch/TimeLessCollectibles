@@ -38,11 +38,13 @@ function extractCheckoutItems(itemsPayload) {
 router.get('/', requireAuth, async (req, res, next) => {
   try {
     const result = await pool.query(
-      `SELECT o.*, p.prodname, p.image, p.price, p.prodcategory
+      `SELECT o.orderid AS "OrderID", o.userid AS "UserID", o.productid AS "ProductID",
+              o.quantity, o.pending, o.delivering, o.delivered,
+              p.prodname, p.image, p.price, p.prodcategory
        FROM user_orders o
-       JOIN products p ON p.ID = o.ProductID
-       WHERE o.UserID = $1
-       ORDER BY o.OrderID DESC`,
+       JOIN products p ON p.id = o.productid
+       WHERE o.userid = $1
+       ORDER BY o.orderid DESC`,
       [req.session.user.id]
     );
     const orders = result.rows;
@@ -60,7 +62,7 @@ router.get('/', requireAuth, async (req, res, next) => {
 });
 
 router.post('/checkout', requireAuth, async (req, res, next) => {
-  const connection = await pool.getConnection();
+  const connection = await pool.connect();
 
   try {
     const selectedItems = extractCheckoutItems(req.body.items);
@@ -88,11 +90,11 @@ router.post('/checkout', requireAuth, async (req, res, next) => {
       return res.redirect('/cart');
     }
 
-    await connection.beginTransaction();
+    await connection.query('BEGIN');
 
     for (const item of validItems) {
       await connection.query(
-        'INSERT INTO user_orders (UserID, ProductID, quantity, pending, delivering, delivered) VALUES ($1, $2, $3, 1, 0, 0)',
+        'INSERT INTO user_orders (userid, productid, quantity, pending, delivering, delivered) VALUES ($1, $2, $3, TRUE, FALSE, FALSE)',
         [req.session.user.id, item.productId, item.quantity]
       );
       await connection.query('DELETE FROM cart_items WHERE user_id = $1 AND product_id = $2', [
@@ -101,11 +103,11 @@ router.post('/checkout', requireAuth, async (req, res, next) => {
       ]);
     }
 
-    await connection.commit();
+    await connection.query('COMMIT');
     setFlash(req, 'success', 'Checkout complete. Your order is now pending.');
     return res.redirect('/orders');
   } catch (error) {
-    await connection.rollback();
+    await connection.query('ROLLBACK');
     return next(error);
   } finally {
     connection.release();

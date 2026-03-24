@@ -30,6 +30,7 @@ function normalizeProduct(row) {
 
   return {
     ...row,
+    ID: row.ID || row.id,
     image,
     categoryName: getCategoryName(row.prodcategory),
   };

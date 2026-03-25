@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 const pool = require('../config/db');
 const createMailer = require('../config/mailer');
 const { setFlash } = require('../middleware/flash');
@@ -17,11 +18,6 @@ async function verifyStoredPassword(plainPassword, storedPassword) {
   }
 
   return plainPassword === storedPassword;
-}
-
-function getMissingSmtpFields() {
-  const required = ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'];
-  return required.filter((key) => !process.env[key] || !String(process.env[key]).trim());
 }
 
 router.get('/login', (req, res) => {
@@ -156,27 +152,23 @@ router.post('/forgot-password', async (req, res, next) => {
     );
 
     const resetLink = `${process.env.APP_URL || 'http://localhost:3000'}/auth/reset-password?token=${token}`;
-    const missingSmtpFields = getMissingSmtpFields();
-    if (missingSmtpFields.length) {
-      setFlash(
-        req,
-        'error',
-        `Password reset email is not configured. Missing: ${missingSmtpFields.join(', ')}.`
-      );
+
+    const mailer = await createMailer();
+    if (!mailer) {
+      setFlash(req, 'error', 'Password reset email is not configured. Set SMTP_HOST, SMTP_USER, and SMTP_PASS in your environment.');
       return res.redirect('/auth/forgot-password');
     }
 
-    const mailer = createMailer();
-    if (mailer) {
-      await mailer.sendMail({
-        from: process.env.MAIL_FROM || process.env.SMTP_USER,
-        to: user.email,
-        subject: 'Reset your Timeless Collectibles password',
-        html: `<p>Use the link below to reset your password.</p><p><a href="${resetLink}">${resetLink}</a></p>`,
-      });
-    } else {
-      setFlash(req, 'error', 'Password reset email sender initialization failed. Check .env SMTP values and restart the app.');
-      return res.redirect('/auth/forgot-password');
+    const info = await mailer.sendMail({
+      from: process.env.MAIL_FROM || process.env.SMTP_USER || 'noreply@timelesscollectibles.local',
+      to: user.email,
+      subject: 'Reset your Timeless Collectibles password',
+      html: `<p>Use the link below to reset your password.</p><p><a href="${resetLink}">${resetLink}</a></p>`,
+    });
+
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log(`[auth] Password reset email preview: ${previewUrl}`);
     }
 
     setFlash(req, 'success', 'Reset link sent to your email.');

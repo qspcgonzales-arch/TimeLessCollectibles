@@ -456,6 +456,15 @@ a:hover {
   transition: transform 260ms ease;
 }
 
+.hero-panel .product-image-wrap {
+  aspect-ratio: 1 / 1;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.hero-panel .product-image-wrap img {
+  object-fit: contain;
+}
+
 .product-card:hover .product-image-wrap img {
   transform: scale(1.03);
 }

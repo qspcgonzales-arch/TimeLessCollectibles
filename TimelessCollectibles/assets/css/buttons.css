@@ -1,0 +1,14 @@
+input.checkout-toggle[type="checkbox"] {
+    background-color: rgb(39, 38, 46) !important;
+    border: 2px solid rgb(25, 245, 170) !important;
+}
+
+.quantity-select {
+  background-color: rgb(39, 38, 46);
+  border: 2px solid rgb(25, 245, 170);
+  color: rgb(25, 245, 170); 
+}
+
+.quantity-select::after {
+  border-color: rgb(25, 245, 170);
+}

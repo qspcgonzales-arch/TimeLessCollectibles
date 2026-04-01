@@ -1,0 +1,53 @@
+Webpages:				Noteable functions
+
+index.php 
+about.php		
+1Plushies.php -  	]> 
+2Figurines.php-  	]> ALL DYNAMIC DISPLAY OF PRODUCTS (foreachProduct function)
+3Cards.php -		]> 
+4Cartridges.php- 	]> 
+
+login.php		] Admin101 Hardcoded credentials / Login logic.
+signup.php		] SQL Insertion of data to database (email,password,address,country)
+settings.php		] handlePasswordChange Function / changeAddress Function
+forgot_password.php     ] Front end for and passes email to send_password_reset.php
+reset_password.php	] SQL select from users table (reset_token_hash)
+
+			] resultProductIds PHP function / forEach Cart Product function
+			] checkoutToggles Function / updateTotalAmount Function
+usercart.php		] Integration of Paypal API / calculateTotalAmount Logic
+			] confirmRemove Function / filterTableUserCart Function
+			] searInputUserCart Function
+
+user_history.php	] PHP SQL fetchOrderData ( for user ) function
+
+
+admin.php		] SQL Insertion of data to database
+			] (ID,ProductImage,ProductName,Description,ProductCategory,Price)
+			] PHP AJAX function generateUUID / PHP AJAX clearForm
+
+adminremove2.php	] PHP SQL fetchProductData function / confirmRemove(productId) Function
+			] filterTableAdmin Function / getElementById Function
+
+adminorders3.php	] PHP SQL fetchOrderData function / setStatus function / filterOrders function
+
+
+
+Functions (NO HTML ELEMENETS) :    [ refers to ]		[logic]
+
+add_to_cart.php			[1 to 4 product PHPs] SQL insert to cart_items table logic
+delete_from_cart.php		[    usercart.php   ] SQL Delete from cart_items table logic
+delete_product.php		[  adminremove2.php ] SQL Delete from products table logic		
+logout.php			[  logout function  ] Ends user session
+mailer.php			[    PHPMailer	    ] PHPmailer Credentials
+process_reset_password.php	[ reset_password.php] SQL Select from users table (token) logic
+send_password_reset.php		[forgot_password.php] SQL Select from users table (email) logic
+				[forgot_password.php] Logic for Generation of reset password email 
+
+session.php			[	----	    ] logic to check user session
+settingschangeaddress.php	[   settings.php    ] SQL Update users Set ( address and country )
+settingschangepassword.php	[   settings.php    ] SQL Update users Set ( password)
+update_order_status.php		[  adminorders3.php ] SQL Update user_orders ( statuses )
+user_order_process.php		[    usercart.php   ] SQL insert to user_orders
+
+

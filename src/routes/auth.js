@@ -37,6 +37,7 @@ router.post('/login', async (req, res, next) => {
       return res.redirect('/auth/login');
     }
 
+
     if (
       email === process.env.ADMIN_EMAIL &&
       password === process.env.ADMIN_PASSWORD
@@ -44,8 +45,23 @@ router.post('/login', async (req, res, next) => {
       req.session.user = {
         email,
         isAdmin: true,
+        isStaff: false,
       };
       setFlash(req, 'success', 'Admin login successful.');
+      return res.redirect('/admin');
+    }
+
+    const staffEmails = (process.env.STAFF_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+    if (
+      staffEmails.includes((email || '').toLowerCase()) &&
+      password === process.env.STAFF_PASSWORD
+    ) {
+      req.session.user = {
+        email,
+        isAdmin: false,
+        isStaff: true,
+      };
+      setFlash(req, 'success', 'Staff login successful.');
       return res.redirect('/admin');
     }
 
@@ -67,6 +83,7 @@ router.post('/login', async (req, res, next) => {
       address: user.address,
       country: user.country,
       isAdmin: false,
+      isStaff: false,
     };
     req.session.pending2FA = null;
     req.session.dev2FAPin = null;

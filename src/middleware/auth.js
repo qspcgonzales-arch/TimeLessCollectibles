@@ -1,3 +1,9 @@
+function requireStaff(req, res, next) {
+  if (!req.session.user || !req.session.user.isStaff) {
+    return res.redirect('/auth/login');
+  }
+  return next();
+}
 function requireAuth(req, res, next) {
   if (!req.session.user) {
     return res.redirect('/auth/login');
@@ -17,4 +23,5 @@ function requireAdmin(req, res, next) {
 module.exports = {
   requireAuth,
   requireAdmin,
+  requireStaff,
 };

@@ -3,7 +3,7 @@ const express = require('express');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const pool = require('../config/db');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireStaff } = require('../middleware/auth');
 const { setFlash } = require('../middleware/flash');
 const { normalizeProduct, getStatusLabel, CATEGORY_MAP } = require('../utils/catalog');
 
@@ -27,7 +27,13 @@ const upload = multer({
   },
 });
 
-router.get('/', requireAdmin, async (req, res, next) => {
+// Both admin and staff can access dashboard
+router.get('/', (req, res, next) => {
+  if (req.session.user && (req.session.user.isAdmin || req.session.user.isStaff)) {
+    return next();
+  }
+  return res.redirect('/auth/login');
+}, async (req, res, next) => {
   try {
     const result = await pool.query(
       `SELECT
@@ -46,6 +52,7 @@ router.get('/', requireAdmin, async (req, res, next) => {
   }
 });
 
+// Only admin can manage products
 router.get('/products', requireAdmin, async (req, res, next) => {
   try {
     const result = await pool.query('SELECT * FROM products ORDER BY prodname ASC');
@@ -93,6 +100,7 @@ router.post('/products', requireAdmin, upload.single('image'), async (req, res, 
 });
 
 router.post('/products/:id/delete', requireAdmin, async (req, res, next) => {
+
   try {
     await pool.query('DELETE FROM products WHERE id = $1', [req.params.id]);
     setFlash(req, 'success', 'Product deleted.');
@@ -102,7 +110,8 @@ router.post('/products/:id/delete', requireAdmin, async (req, res, next) => {
   }
 });
 
-router.get('/orders', requireAdmin, async (req, res, next) => {
+// Both admin and staff can view/manage orders
+router.get('/orders', requireStaff, async (req, res, next) => {
   try {
     const result = await pool.query(
       `SELECT o.orderid AS "OrderID", o.userid AS "UserID", o.productid AS "ProductID",
@@ -124,7 +133,8 @@ router.get('/orders', requireAdmin, async (req, res, next) => {
   }
 });
 
-router.post('/orders/:id/status', requireAdmin, async (req, res, next) => {
+// Both admin and staff can update order status
+router.post('/orders/:id/status', requireStaff, async (req, res, next) => {
   try {
     const status = req.body.status;
     const statusMap = {

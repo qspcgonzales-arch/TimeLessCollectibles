@@ -24,8 +24,42 @@ function getMissingSmtpFields() {
   return required.filter((key) => !process.env[key] || !String(process.env[key]).trim());
 }
 
+function getStaffEmails() {
+  return (process.env.STAFF_EMAILS || '')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 router.get('/login', (req, res) => {
   res.render('auth/login', { title: 'Login' });
+});
+
+router.get('/staff-login', (req, res) => {
+  res.render('auth/staff-login', { title: 'Staff Login' });
+});
+
+router.post('/staff-login', (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    setFlash(req, 'error', 'Email and password are required.');
+    return res.redirect('/auth/staff-login');
+  }
+
+  const staffEmails = getStaffEmails();
+  if (!staffEmails.includes(String(email).toLowerCase()) || password !== process.env.STAFF_PASSWORD) {
+    setFlash(req, 'error', 'Invalid staff credentials.');
+    return res.redirect('/auth/staff-login');
+  }
+
+  req.session.user = {
+    email,
+    isAdmin: false,
+    isStaff: true,
+  };
+  setFlash(req, 'success', 'Staff login successful.');
+  return res.redirect('/admin');
 });
 
 router.post('/login', async (req, res, next) => {
@@ -37,6 +71,7 @@ router.post('/login', async (req, res, next) => {
       return res.redirect('/auth/login');
     }
 
+
     if (
       email === process.env.ADMIN_EMAIL &&
       password === process.env.ADMIN_PASSWORD
@@ -44,8 +79,23 @@ router.post('/login', async (req, res, next) => {
       req.session.user = {
         email,
         isAdmin: true,
+        isStaff: false,
       };
       setFlash(req, 'success', 'Admin login successful.');
+      return res.redirect('/admin');
+    }
+
+    const staffEmails = getStaffEmails();
+    if (
+      staffEmails.includes((email || '').toLowerCase()) &&
+      password === process.env.STAFF_PASSWORD
+    ) {
+      req.session.user = {
+        email,
+        isAdmin: false,
+        isStaff: true,
+      };
+      setFlash(req, 'success', 'Staff login successful.');
       return res.redirect('/admin');
     }
 
@@ -67,6 +117,7 @@ router.post('/login', async (req, res, next) => {
       address: user.address,
       country: user.country,
       isAdmin: false,
+      isStaff: false,
     };
     req.session.pending2FA = null;
     req.session.dev2FAPin = null;

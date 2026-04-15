@@ -18,6 +18,7 @@
             <th>Quantity</th>
             <th>Total</th>
             <th>Status</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -28,6 +29,13 @@
               <td><%= order.quantity %></td>
               <td>PHP <%= Number(order.price * order.quantity).toLocaleString() %></td>
               <td><span class="badge-status <%= order.statusLabel.toLowerCase() %>"><%= order.statusLabel %></span></td>
+              <td>
+                <% if (order.pending) { %>
+                  <form method="post" action="/orders/<%= order.OrderID %>/cancel" style="display:inline;">
+                    <button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('Cancel this order?');">Cancel</button>
+                  </form>
+                <% } %>
+              </td>
             </tr>
           <% }) %>
         </tbody>

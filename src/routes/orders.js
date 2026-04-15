@@ -114,4 +114,35 @@ router.post('/checkout', requireAuth, async (req, res, next) => {
   }
 });
 
+router.post('/:id/cancel', requireAuth, async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      'SELECT orderid, userid, pending FROM user_orders WHERE orderid = $1',
+      [req.params.id]
+    );
+    const order = result.rows[0];
+
+    if (!order) {
+      setFlash(req, 'error', 'Order not found.');
+      return res.redirect('/orders');
+    }
+
+    if (order.userid !== req.session.user.id) {
+      setFlash(req, 'error', 'You are not authorized to cancel this order.');
+      return res.redirect('/orders');
+    }
+
+    if (!order.pending) {
+      setFlash(req, 'error', 'Only pending orders can be cancelled.');
+      return res.redirect('/orders');
+    }
+
+    await pool.query('DELETE FROM user_orders WHERE orderid = $1', [req.params.id]);
+    setFlash(req, 'success', 'Order cancelled successfully.');
+    return res.redirect('/orders');
+  } catch (error) {
+    return next(error);
+  }
+});
+
 module.exports = router;

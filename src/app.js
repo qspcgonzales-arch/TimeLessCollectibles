@@ -5,6 +5,7 @@ const methodOverride = require('method-override');
 const dotenv = require('dotenv');
 
 const { flashMiddleware } = require('./middleware/flash');
+const sanitizeInputs = require('./middleware/sanitize');
 const mainRoutes = require('./routes');
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(sanitizeInputs);
 app.use(methodOverride('_method'));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'change-me',

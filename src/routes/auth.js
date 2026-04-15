@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const pool = require('../config/db');
 const createMailer = require('../config/mailer');
 const { setFlash } = require('../middleware/flash');
+const { isLocked, timeRemaining, recordFailure, clearFailures } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
@@ -24,12 +25,36 @@ function getMissingSmtpFields() {
   return required.filter((key) => !process.env[key] || !String(process.env[key]).trim());
 }
 
+function generate2FAPin() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+async function send2FAEmail(toEmail, pin) {
+  const mailer = createMailer();
+  if (!mailer) return false;
+  await mailer.sendMail({
+    from: process.env.MAIL_FROM || process.env.SMTP_USER,
+    to: toEmail,
+    subject: 'Your Timeless Collectibles login code',
+    html: `<p>Your 6-digit login code is: <strong>${pin}</strong></p><p>It expires in 10 minutes.</p>`,
+  });
+  return true;
+}
+
 router.get('/login', (req, res) => {
   res.render('auth/login', { title: 'Login' });
 });
 
 router.post('/login', async (req, res, next) => {
   try {
+    const ip = req.ip;
+
+    // Brute force check
+    if (isLocked(ip)) {
+      setFlash(req, 'error', `Too many failed attempts. Try again in ${timeRemaining(ip)}.`);
+      return res.redirect('/auth/login');
+    }
+
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -37,11 +62,12 @@ router.post('/login', async (req, res, next) => {
       return res.redirect('/auth/login');
     }
 
-
+    // Admin login — no 2FA
     if (
       email === process.env.ADMIN_EMAIL &&
       password === process.env.ADMIN_PASSWORD
     ) {
+      clearFailures(ip);
       req.session.user = {
         email,
         isAdmin: true,
@@ -51,11 +77,13 @@ router.post('/login', async (req, res, next) => {
       return res.redirect('/admin');
     }
 
+    // Staff login — no 2FA
     const staffEmails = (process.env.STAFF_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
     if (
       staffEmails.includes((email || '').toLowerCase()) &&
       password === process.env.STAFF_PASSWORD
     ) {
+      clearFailures(ip);
       req.session.user = {
         email,
         isAdmin: false,
@@ -65,23 +93,88 @@ router.post('/login', async (req, res, next) => {
       return res.redirect('/admin');
     }
 
+    // Regular user login
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
     if (!user || !(await verifyStoredPassword(password, user.password))) {
+      recordFailure(ip);
       setFlash(req, 'error', 'Invalid email or password.');
       return res.redirect('/auth/login');
     }
 
+    // Upgrade legacy plaintext password
     if (!user.password.startsWith('$2')) {
       const upgradedHash = await bcrypt.hash(password, 12);
       await pool.query('UPDATE users SET password = $1 WHERE id = $2', [upgradedHash, user.id]);
     }
 
-    req.session.user = {
-      id: user.id,
+    clearFailures(ip);
+
+    // 2FA — send PIN via email
+    const pin = generate2FAPin();
+    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    req.session.pending2FA = {
+      userId: user.id,
       email: user.email,
       address: user.address,
       country: user.country,
+      pin,
+      expires,
+    };
+
+    const smtpMissing = getMissingSmtpFields();
+    if (smtpMissing.length === 0) {
+      await send2FAEmail(user.email, pin);
+      setFlash(req, 'success', `A 6-digit code has been sent to ${user.email}.`);
+    } else {
+      // Dev fallback: show pin in session for verify page
+      req.session.dev2FAPin = pin;
+    }
+
+    return res.redirect('/auth/verify-2fa');
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/verify-2fa', (req, res) => {
+  if (!req.session.pending2FA) {
+    setFlash(req, 'error', 'No pending login. Please log in first.');
+    return res.redirect('/auth/login');
+  }
+  const { email } = req.session.pending2FA;
+  const dev2FAPin = req.session.dev2FAPin || null;
+  res.render('auth/verify-2fa', { title: 'Verify Login', email, dev2FAPin });
+});
+
+router.post('/verify-2fa', async (req, res, next) => {
+  try {
+    const pending = req.session.pending2FA;
+    if (!pending) {
+      setFlash(req, 'error', 'Session expired. Please log in again.');
+      return res.redirect('/auth/login');
+    }
+
+    if (Date.now() > pending.expires) {
+      req.session.pending2FA = null;
+      req.session.dev2FAPin = null;
+      setFlash(req, 'error', 'Your code has expired. Please log in again.');
+      return res.redirect('/auth/login');
+    }
+
+    const { pin } = req.body;
+    if (!pin || pin.trim() !== pending.pin) {
+      setFlash(req, 'error', 'Invalid code. Please try again.');
+      return res.redirect('/auth/verify-2fa');
+    }
+
+    // 2FA passed — establish full session
+    req.session.user = {
+      id: pending.userId,
+      email: pending.email,
+      address: pending.address,
+      country: pending.country,
       isAdmin: false,
       isStaff: false,
     };
@@ -89,7 +182,6 @@ router.post('/login', async (req, res, next) => {
     req.session.dev2FAPin = null;
 
     setFlash(req, 'success', 'Login successful.');
-
     return res.redirect('/');
   } catch (error) {
     return next(error);
@@ -132,16 +224,6 @@ router.post('/signup', async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
-});
-
-router.get('/verify-2fa', (req, res) => {
-  setFlash(req, 'error', '2FA page is disabled in simplified auth mode.');
-  return res.redirect('/auth/login');
-});
-
-router.post('/verify-2fa', async (req, res, next) => {
-  setFlash(req, 'error', '2FA verification is disabled in simplified auth mode.');
-  return res.redirect('/auth/login');
 });
 
 router.get('/forgot-password', (req, res) => {

@@ -534,8 +534,20 @@ textarea.form-control::placeholder {
 }
 
 .alert {
-  color: var(--ink);
-  border-color: var(--line);
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.alert-danger {
+  background-color: #4a1a1a;
+  border-color: #c0392b;
+  color: #f5b7b1;
+}
+
+.alert-success {
+  background-color: #1a3a2a;
+  border-color: #27ae60;
+  color: #a9dfbf;
 }
 
 .table > :not(caption) > * > * {

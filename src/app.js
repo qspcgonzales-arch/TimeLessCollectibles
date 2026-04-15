@@ -19,6 +19,10 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+<<<<<<< Updated upstream
+=======
+// app.use(sanitizeInputs); // DEMO: disabled to show vulnerable state
+>>>>>>> Stashed changes
 app.use(methodOverride('_method'));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'change-me',

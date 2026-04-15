@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(createdb mstvhrxe_tcdb)",
+      "Bash(\"C:/Program Files/PostgreSQL/18/bin/createdb\" -U postgres mstvhrxe_tcdb)",
+      "Bash(PGPASSWORD=123456 \"C:/Program Files/PostgreSQL/18/bin/createdb\" -U postgres mstvhrxe_tcdb)",
+      "Bash(PGPASSWORD=123456 \"C:/Program Files/PostgreSQL/18/bin/psql\" -U postgres -d mstvhrxe_tcdb -f schema.sql)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /PID 7328 /F)",
+      "Bash(cmd.exe /c \"taskkill /PID 7328 /F\")",
+      "Bash(cmd.exe /c \"taskkill /PID 7328 /F 2>&1\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(cmd.exe /c \"netstat -ano | findstr :3000 | findstr LISTENING\")",
+      "Bash(cmd.exe /c \"netstat -ano | findstr :3000\")",
+      "Bash(cmd.exe /c \"taskkill /F /IM node.exe 2>&1\")",
+      "Bash(PGPASSWORD=123456 \"C:/Program Files/PostgreSQL/18/bin/psql\" -U postgres -d mstvhrxe_tcdb -c \"SELECT id, email, password FROM users;\")"
+    ]
+  }
+}

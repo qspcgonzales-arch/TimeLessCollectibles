@@ -99,9 +99,18 @@ router.post('/login', async (req, res, next) => {
       return res.redirect('/admin');
     }
 
+<<<<<<< Updated upstream
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
     if (!user || !(await verifyStoredPassword(password, user.password))) {
+=======
+    // Regular user login
+    // DEMO: intentionally vulnerable — both email and password checked in SQL
+    const result = await pool.query(`SELECT * FROM users WHERE email = '${email}' AND password = '${password}'`);
+    const user = result.rows[0];
+    if (!user) {
+      recordFailure(ip);
+>>>>>>> Stashed changes
       setFlash(req, 'error', 'Invalid email or password.');
       return res.redirect('/auth/login');
     }
